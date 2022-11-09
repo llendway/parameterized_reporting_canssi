@@ -85,11 +85,12 @@ See tomato_example.Rmd
 </center>
 
 <div class="notes">
-I'm always looking for ways to use RMarkdown to make my work easier. 
 
-Here's my garden. I joke that it's my 3rd child in the summers. Not only do I harvest fruit and vegetables from it, but I collect data, too!
+This is my garden. I joke that it's my 3rd child in the summers. I'm sure you're wondering, what does Lisa's garden have to do with parameterized reports? 
 
-Every time I go pick some fruit and vegetables, I bring it inside and weight it, enter it into a spreadsheet, and (eventually) update the gardenR R package. 
+Well, not only do I harvest fruit and vegetables from it, but I collect data, too!
+
+Every time I go pick some fruit and vegetables, I bring it inside and weight it, enter it into a spreadsheet, and (eventually) update my gardenR R package. 
 
 </div>
 
@@ -98,10 +99,37 @@ Every time I go pick some fruit and vegetables, I bring it inside and weight it,
 Create a report for each vegetable that 
 
 - Highlights how its weight compares to other vegetables.  
-- Shows weights of different varieties of vegetables.  
+- Shows weights of different varieties of that vegetable.  
 - Graphs cumulative harvest for that vegetable over time. 
 
 Let's look at the report I created for tomatoes: 01_simple_report.html 
+
+
+<div class="notes">
+Create a report for each vegetable that 
+
+- Highlights how its weight compares to other vegetables.  
+- Shows weights of different varieties of that vegetable.  
+- Graphs cumulative harvest for that vegetable over time. 
+
+Let's look at the report I created for tomatoes: 01_simple_report.html 
+
+</div>
+
+---
+
+<center>
+
+<video width="800" height="600" controls>
+  <source src="images/simple_report.mp4" type="video/mp4">
+</video>
+
+</center>
+
+<div class="notes">
+We have all the features in the report we desired.
+</div>
+
 
 ---
 
@@ -118,7 +146,7 @@ Let's scroll through the code that created the report. I've highlighted all the 
 </div>
 
 
-## Now what?
+## Now what? ... `params`!
 
 <div class="columns-2">
 
@@ -131,7 +159,7 @@ Let's scroll through the code that created the report. I've highlighted all the 
 </div>
 
 <div class="notes">
-Trying to replicate this new report using find and replace would be awful. 
+Trying to replicate this new report using find and replace would be awful. We could set up a variable at the beginning of the code, which would solve many (although not all) of our probelms, but that won't give us a good way to programatically run the file, which I'll talk about later. 
 
 Instead, we add something new to the YAML header: a parameter. Our parameter is vegetable, and its initial value is "tomatoes". 
 </div>
@@ -147,12 +175,18 @@ Instead, we add something new to the YAML header: a parameter. Our parameter is 
 
 </center>
 
+<div class="notes">
 
-## Rmd and html
+</div>
 
-![](images/yaml_title_rmd.png)
+## Using parameter inside of YAML
 
-![](images/yaml_title_html.png)
+What you type in Rmd:
+
+![](images/yaml_title_rmd.png){width="100%"}
+
+What it looks like in knitted file:
+![](images/yaml_title_html.png){width="100%"}
 
 ## Rmd and html
 
@@ -160,7 +194,7 @@ Instead, we add something new to the YAML header: a parameter. Our parameter is 
 mutate(veggie_color = vegetable == params$vegetable)
 ```
 
-![](images/param_highlight_veg.png)
+![](images/param_highlight_veg.png){width="100%"}
 
 
 ## Rmd and html
@@ -169,16 +203,57 @@ mutate(veggie_color = vegetable == params$vegetable)
 labs(title = paste0("Total  harvest of each variety (kg), 2021: ", params$vegetable)
 ```
 
-![](images/param_ggplot_title.png)
+![](images/param_ggplot_title.png){width="100%"}
 
-## Change the parameter value
+## Change the parameter value - in Rmd
+
+<center>
+
+<video width="800" height="600" controls>
+  <source src="images/param_change_rmd.mp4" type="video/mp4">
+</video>
+
+</center>
 
 
+## Change the parameter value - programmatically
 
+See 03_render_reports.R
+
+```{r, eval=FALSE}
+render(
+  # Point to the Rmd file
+  input = here("02_parameterized_report.Rmd"),
+  # Name the output file (and path)
+  # This code puts it in a folder called sample_render
+  output_file = here("sample_render", "lettuce_example.html"),
+  # New value of parameter
+  params = list(vegetable = "lettuce")
+  )
+```
 
 ## Making a lot of reports
 
+```{r, eval=FALSE}
+# Vector of all vegetables with more than 2 harvests
+vegetable <- harvest_2021 %>% 
+  group_by(vegetable) %>% 
+  summarize(n = n()) %>% 
+  filter(n > 2) %>% 
+  pull(vegetable)
 
+# tibble that has the input Rmd, output file path, 
+# and params written correctly as a list. 
+reports <- tibble(
+  input = here("02_parameterized_report.Rmd"),
+  output_file = here("output", paste0(vegetable, "-report.html")),
+  params = map(vegetable, ~list(vegetable = .))
+)
+
+# creates all the reports!
+reports %>% 
+  pwalk(render)
+```
 
 
 ## Other examples

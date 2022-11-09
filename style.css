@@ -6,5 +6,5 @@ slides > slide.title-slide {
 slides > slide.title-slide hgroup h1,
 slides > slide.title-slide p {
     color: white;
-    -webkit-text-stroke: 1px black;
+/*    -webkit-text-stroke: 1px black; */
 }
