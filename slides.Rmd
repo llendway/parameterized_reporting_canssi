@@ -1,0 +1,201 @@
+---
+title: "Creating reproducible and parameterized reports with RMarkdown"
+author: "Lisa Lendway, PhD"
+date: "`r lubridate::today()`"
+output: 
+  ioslides_presentation:
+    widescreen: true
+    css: style.css
+---
+
+
+
+## Let's step back in time ...
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r, echo=FALSE}
+library(tidyverse)
+library(gardenR)
+library(knitr)
+library(here)
+here::i_am("README.md")
+```
+
+<center>
+
+![](images/old_R.png){width="90%"}
+
+</center>
+
+<div class="notes">
+Back before RMarkdown, like when I wrote my PhD thesis, my workflow looked something like this:
+
+1. Write R code in something like notepad - pretty much just plain text.  
+2. Save any important output and images to folders that were "organized" by topic.  
+3. Make a note in the code file of what I named the images.  
+4. Put this all together in a latex or Word document.  
+5. Hope that I wouldn't forget what or where everything was.
+
+
+</div>
+
+
+---
+
+<iframe src="https://giphy.com/embed/NTur7XlVDUdqM" width="480" height="270" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/trump-consequences-NTur7XlVDUdqM">via GIPHY</a></p>
+
+<div class="notes">
+
+It WAS NOT fine!  
+
+I somehow put together my thesis in one document, but (don't tell anyone), there's no way I'd be able to put it all back together now!
+
+</div>
+
+## Enter RMarkdown
+
+<div class="columns-2">
+
+![](images/rmarkdown_code.png){width="100%"}
+
+See tomato_example.Rmd
+
+![](images/tomatoes_html.png){width="100%"}
+
+</div>
+
+
+<div class="notes">
+
+1. Write code to do analysis in an R Markdown file (includes all code, text, and output in one place) and compile to desired format, usually html.
+2. If a change needs to be made, I can easily do that without having to figure out which piece of code created which output.  
+3. This has made my life sooooo much easier!! It would be very difficult to going back to doing things the "old way" ... I haven't yet.
+
+</div>
+
+---
+
+<center>
+
+![](images/garden.jpg){width="80%"}
+
+</center>
+
+<div class="notes">
+I'm always looking for ways to use RMarkdown to make my work easier. 
+
+Here's my garden. I joke that it's my 3rd child in the summers. Not only do I harvest fruit and vegetables from it, but I collect data, too!
+
+Every time I go pick some fruit and vegetables, I bring it inside and weight it, enter it into a spreadsheet, and (eventually) update the gardenR R package. 
+
+</div>
+
+## Goal
+
+Create a report for each vegetable that 
+
+- Highlights how its weight compares to other vegetables.  
+- Shows weights of different varieties of vegetables.  
+- Graphs cumulative harvest for that vegetable over time. 
+
+Let's look at the report I created for tomatoes: 01_simple_report.html 
+
+---
+
+<center>
+
+<video width="800" height="600" controls>
+  <source src="images/tomatoes.mp4" type="video/mp4">
+</video>
+
+</center>
+
+<div class="notes">
+Let's scroll through the code that created the report. I've highlighted all the places the word tomatoes is used in the code. As we see at the end, there are also some places where the word tomato is used. 
+</div>
+
+
+## Now what?
+
+<div class="columns-2">
+
+- I DO NOT want to find and replace all!  
+- There are `r length(unique(harvest_2021$vegetable))` unique vegetables. 
+- See 02_parameterized_report.Rmd
+
+![](images/yaml_params.png){width="90%"}
+
+</div>
+
+<div class="notes">
+Trying to replicate this new report using find and replace would be awful. 
+
+Instead, we add something new to the YAML header: a parameter. Our parameter is vegetable, and its initial value is "tomatoes". 
+</div>
+
+
+---
+
+<center>
+
+<video width="800" height="600" controls>
+  <source src="images/using_params.mp4" type="video/mp4">
+</video>
+
+</center>
+
+
+## Rmd and html
+
+![](images/yaml_title_rmd.png)
+
+![](images/yaml_title_html.png)
+
+## Rmd and html
+
+```{r, eval=FALSE}
+mutate(veggie_color = vegetable == params$vegetable)
+```
+
+![](images/param_highlight_veg.png)
+
+
+## Rmd and html
+
+```{r, eval=FALSE}
+labs(title = paste0("Total  harvest of each variety (kg), 2021: ", params$vegetable)
+```
+
+![](images/param_ggplot_title.png)
+
+## Change the parameter value
+
+
+
+
+## Making a lot of reports
+
+
+
+
+## Other examples
+
+- Urban Institute's [State Fiscal Briefs](https://www.urban.org/policy-centers/cross-center-initiatives/state-and-local-finance-initiative/projects/state-fiscal-briefs)  
+- North Carolina's [postsecondary education attainment dashboard](https://dashboard.myfuturenc.org/county-data-and-resources/)  
+- [Financial report](https://github.com/lindblb/pro_reports_talk/blob/main/finished_reports/fargo_2019_11.pdf) example from Brad Lindblad  
+- [Real estate data](https://data.ocenime.bg/examples/comparable) (in Bulgarian)  
+- [Tutorial](https://www.danieldsjoberg.com/dca-tutorial/dca-tutorial-r.html) by Daniel Sjoberg where coding language is a parameter  
+- R for the Rest of Us's (David Keyes) Partnership for Strong Communities/Connecticut Data Collaborative [Housing Data Profiles](https://housingprofiles.pschousing.org/)
+
+## Getting started on your own
+
+- R Markdown: The Definitive Guide, [Ch. 15 Parameterized reports](https://bookdown.org/yihui/rmarkdown/parameterized-reports.html)
+- Urban Institute [tutorial](https://urban-institute.medium.com/iterated-fact-sheets-with-r-markdown-d685eb4eafce) with David Keyes' [video](https://rfortherestofus.com/2020/10/parameterized-reporting-with-rmarkdown/)  
+- Taking it a step further and [creating an API](https://www.datalorax.com/post/power-parameterized-reports-plumber/) by the datalorax (Daniel Anderson)
+- Parameterized reporting [using Quarto](https://www.mm218.dev/posts/2022-08-04-how-to-use-quarto-for-parameterized-reporting/) by Mike Mahoney. 
+
+## Thank you!
+

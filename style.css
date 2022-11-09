@@ -1,0 +1,10 @@
+slides > slide.title-slide {
+  background-image: url("images/garden.jpg");
+  background-size: 100% 100%;
+}
+
+slides > slide.title-slide hgroup h1,
+slides > slide.title-slide p {
+    color: white;
+    -webkit-text-stroke: 1px black;
+}

@@ -1,0 +1,159 @@
+---
+title: "Vegetable harvest report - tomatoes"
+date: 'Created on `r lubridate::today()`'
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+# Set desired options
+
+knitr::opts_chunk$set(
+  echo = FALSE,     # omit code
+  warning = FALSE,  # omit warnings
+  message = FALSE,  # omit messages
+  error = TRUE)     # keep errors but still knit
+```
+
+```{r libraries}
+# Load packages to access more functions
+
+library(tidyverse)      # for plotting and wrangling data
+library(gardenR)        # for Lisa's garden data
+library(DT)             # for nice large tables
+library(knitr)          # for kable function
+library(gt)             # for nice html tables
+library(gtExtras)       # for extensions of gt
+library(here)           # for good file referencing
+
+# Set main folder
+here::i_am("README.md")
+```
+
+## 2021 Garden summary {.tabset .tabset-pills}
+
+The tables and graphs below summarize the total harvest amount by vegetable. Tomatoes make up about `r round(harvest_2021 %>% summarize(prop = sum(weight*(vegetable == "tomatoes"))/sum(weight)) %>% pull(prop),3)*100`\% of the total harvest. 
+
+### Table
+
+
+```{r}
+s2 <- 
+  harvest_2021 %>% 
+  group_by(vegetable) %>% 
+  summarize(total_weight_kg = sum(weight)/1000)
+  
+s2 %>% 
+  arrange(-total_weight_kg) %>% 
+  gt() %>% 
+  cols_label(
+    total_weight_kg = "Weight (kg)"
+  ) %>% 
+  tab_style(
+    style = list(
+      cell_fill(color = "darkblue"),
+      cell_text(color = "white")
+    ),
+    locations = cells_body(
+      rows = vegetable == "tomatoes"
+    )
+  ) %>% 
+  tab_options(
+    container.height = px(300)
+  )
+```
+
+### Graph
+
+```{r}
+g2 <-
+  s2 %>% 
+  mutate(veggie_color = vegetable == "tomatoes") %>% 
+  ggplot(
+    aes(x = total_weight_kg,
+        y = fct_reorder(vegetable, total_weight_kg),
+        fill = veggie_color)
+  ) +
+  geom_col(width = .6, 
+           show.legend = FALSE) +
+  scale_fill_manual(values = c("TRUE" = "darkblue", "FALSE" = "gray")) +
+  labs(title = "Total harvest weight (kg) broken out by vegetable",
+       x = "",
+       y = "") +
+  scale_x_continuous(expand = expansion(mult = 0)) +
+  theme_minimal() +
+  theme(panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        plot.title.position = "plot",
+        axis.text.y = element_text(size = 8))
+
+g2
+```
+
+## Tomato harvest 2021 {.tabset .tabset-pills}
+
+```{r}
+tomatoes <- 
+  harvest_2021 %>% 
+  filter(vegetable == "tomatoes")
+
+variety_smry <- tomatoes %>% 
+  group_by(variety) %>% 
+  summarize(`# of harvests` = n(),
+            `Kilograms` = sum(weight)/1000)
+```
+
+Of the `r length(unique(tomatoes$variety))` varieties of tomatoes, `r variety_smry %>% arrange(-Kilograms) %>% slice(1) %>% pull(variety)` had the largest harvest. 
+
+### Table
+
+```{r}
+variety_smry %>% 
+  arrange(-Kilograms) %>% 
+  kable(align = "lcc", 
+        digits = c(0,0,1))
+```
+
+
+### Graph
+
+```{r}
+variety_smry %>% 
+  ggplot(
+    aes(y = fct_reorder(variety, Kilograms, sum),
+        x = Kilograms)
+  ) +
+  geom_col(fill = "darkblue", 
+           width = .6) +
+  labs(title = "Total tomato harvest of each variety (kg), 2021",
+       x = "",
+       y = "") +
+  scale_x_continuous(expand = expansion(mult = 0)) +
+  theme_minimal() +
+  theme(panel.grid = element_blank())
+```
+
+##
+
+```{r}
+tomatoes %>% 
+  group_by(date) %>% 
+  summarize(day_harvest = sum(weight)) %>% 
+  mutate(cum_harvest = cumsum(day_harvest)) %>% 
+  ggplot(
+    aes(x = date,
+        y = cum_harvest/1000)
+    ) +
+  geom_point(color = "darkblue") +
+  geom_line(color = "darkblue") +
+  labs(title = "Cumulative harvest of tomatoes",
+       x = "",
+       y = "") +
+  theme_minimal() +
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        plot.title.position = "plot")
+```
+

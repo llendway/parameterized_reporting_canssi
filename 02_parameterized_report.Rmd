@@ -1,0 +1,178 @@
+---
+title: "Vegetable harvest report - `r stringr::str_to_title(params$vegetable)`"
+date: 'Created on `r lubridate::today()`'
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+params: 
+  vegetable: "tomatoes"
+---
+
+<!-- 
+LOOK ABOVE - adding params: argument to the YAML header allows us to use params$vegetable in our code (and text!) which will be read as "tomatoes" (or whatever value we would put there) when we knit the file.
+-->
+
+```{r setup, include=FALSE}
+# Set desired options
+
+knitr::opts_chunk$set(
+  echo = FALSE,     # omit code
+  warning = FALSE,  # omit warnings
+  message = FALSE,  # omit messages
+  error = TRUE)     # keep errors but still knit
+```
+
+```{r libraries}
+# Load packages to access more functions
+
+library(tidyverse)      # for plotting and wrangling data
+library(gardenR)        # for Lisa's garden data
+library(DT)             # for nice large tables
+library(knitr)          # for kable function
+library(gt)             # for nice html tables
+library(gtExtras)       # for extensions of gt
+library(here)           # for good file referencing
+
+# Set main folder
+here::i_am("README.md")
+```
+
+## 2021 Garden summary {.tabset .tabset-pills}
+
+The tables and graphs below summarize the total harvest amount by variety.
+
+### Table
+
+```{r}
+s2 <- 
+  harvest_2021 %>% 
+  group_by(vegetable) %>% 
+  summarize(total_weight_kg = sum(weight)/1000)
+  
+s2 %>% 
+  arrange(-total_weight_kg) %>% 
+  gt() %>% 
+  cols_label(
+    total_weight_kg = "Weight (kg)"
+  ) %>% 
+  tab_style(
+    style = list(
+      cell_fill(color = "darkblue"),
+      cell_text(color = "white")
+    ),
+    locations = cells_body(
+      ####### CHECK IT OUT! ######
+      rows = vegetable == params$vegetable 
+    )
+  ) %>% 
+  tab_options(
+    container.height = px(300)
+  )
+```
+
+### Graph
+
+```{r}
+g2 <-
+  s2 %>% 
+  ####### CHECK IT OUT! ######
+  mutate(veggie_color = vegetable == params$vegetable) %>% 
+  ggplot(
+    aes(x = total_weight_kg,
+        y = fct_reorder(vegetable, total_weight_kg),
+        fill = veggie_color)
+  ) +
+  geom_col(width = .6, 
+           show.legend = FALSE) +
+  scale_fill_manual(values = c("TRUE" = "darkblue", "FALSE" = "gray")) +
+  labs(title = "Total harvest weight (kg) broken out by vegetable",
+       x = "",
+       y = "") +
+  scale_x_continuous(expand = expansion(mult = 0)) +
+  theme_minimal() +
+  theme(panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        plot.title.position = "plot",
+        axis.text.y = element_text(size = 8))
+
+g2
+```
+
+## 2021 Harvest: `r params$vegetable` {.tabset .tabset-pills}
+
+<!-- 
+Notice here, I used the parameter in the section heading above. 
+-->
+
+```{r}
+# Change a little in here to make it more generic
+
+veg_of_interest <-                        
+  harvest_2021 %>% 
+  filter(vegetable == params$vegetable)  
+
+variety_smry <- veg_of_interest %>% 
+  group_by(variety) %>% 
+  summarize(`# of harvests` = n(),
+            `Kilograms` = sum(weight)/1000)
+```
+
+Of the `r length(unique(veg_of_interest$variety))` varieties of `r params$vegetable`, `r variety_smry %>% arrange(-Kilograms) %>% slice(1) %>% pull(variety)` had the largest harvest. 
+
+### Table
+
+```{r}
+variety_smry %>% 
+  arrange(-Kilograms) %>% 
+  kable(align = "lcc", 
+        digits = c(0,0,1))
+```
+
+### Graph
+
+```{r}
+variety_smry %>% 
+  ggplot(
+    aes(y = fct_reorder(variety, Kilograms, sum),
+        x = Kilograms)
+  ) +
+  geom_col(fill = "darkblue", 
+           width = .6) +
+  
+  ####### CHECK IT OUT! ######
+  # Had to be a bit more creative when using it in the title. 
+  # I modified the title order, too, so the sentence would sound good for all vegetables.
+
+  labs(title = paste0("Total  harvest of each variety (kg), 2021: ", params$vegetable),  
+       x = "",
+       y = "") +
+  scale_x_continuous(expand = expansion(mult = 0)) +
+  theme_minimal() +
+  theme(panel.grid = element_blank(),
+        plot.title.position = "plot")
+```
+
+##
+
+```{r}
+veg_of_interest %>%  
+  group_by(date) %>% 
+  summarize(day_harvest = sum(weight)) %>% 
+  mutate(cum_harvest = cumsum(day_harvest)) %>% 
+  ggplot(
+    aes(x = date,
+        y = cum_harvest/1000)
+    ) +
+  geom_point(color = "darkblue") +
+  geom_line(color = "darkblue") +
+  ### CHECK IT OUT: another small change in the title ###
+  labs(title = paste0("Cumulative harvest (kg), 2021: ", params$vegetable),
+       x = "",
+       y = "") +
+  theme_minimal() +
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        plot.title.position = "plot")
+```
+
