@@ -33,8 +33,8 @@ here::i_am("README.md")
 <div class="notes">
 Back before RMarkdown, like when I wrote my PhD thesis, my workflow looked something like this:
 
-1. Write R code in something like notepad - pretty much just plain text.  
-2. Save any important output and images to folders that were "organized" by topic.  
+1. Write R code in something like notepad - pretty much just plain text, what you see in the lower left corner, with a section of code highlighted. 
+2. Save any important output and images to folders that were "organized" by topic. This would include the plot you see on the right and could have also included some code output from the console.   
 3. Make a note in the code file of what I named the images.  
 4. Put this all together in a latex or Word document.  
 5. Hope that I wouldn't forget what or where everything was.
@@ -51,7 +51,7 @@ Back before RMarkdown, like when I wrote my PhD thesis, my workflow looked somet
 
 It WAS NOT fine!  
 
-I somehow put together my thesis in one document, but (don't tell anyone), there's no way I'd be able to put it all back together now!
+I somehow put together my thesis in one document, but (don't tell anyone), there's no way I'd be able to put it all back together now! 
 
 </div>
 
@@ -69,10 +69,14 @@ See tomato_example.Rmd
 
 
 <div class="notes">
+Then came RMarkdown (introduced in 2012, just after I finished my thesis.)
+
+Now I 
 
 1. Write code to do analysis in an R Markdown file (includes all code, text, and output in one place) and compile to desired format, usually html.
 2. If a change needs to be made, I can easily do that without having to figure out which piece of code created which output.  
-3. This has made my life sooooo much easier!! It would be very difficult to going back to doing things the "old way" ... I haven't yet.
+
+This has made my life sooooo much easier!! It would be very difficult to going back to doing things the "old way" ... I haven't yet. And I continue to look for ways that RMarkdown might be able to make my life easier.
 
 </div>
 
@@ -86,7 +90,7 @@ See tomato_example.Rmd
 
 <div class="notes">
 
-This is my garden. I joke that it's my 3rd child in the summers. I'm sure you're wondering, what does Lisa's garden have to do with parameterized reports? 
+Next, I'd like to redirect you to the photo of my garden. I joke that it's my 3rd child in the summers. I'm sure you're wondering, what does Lisa's garden have to do with parameterized reports? 
 
 Well, not only do I harvest fruit and vegetables from it, but I collect data, too!
 
@@ -106,7 +110,7 @@ Let's look at the report I created for tomatoes: 01_simple_report.html
 
 
 <div class="notes">
-Let's say I want to create a report for each vegetable that 
+As a simple example, let's say I want to create a report for each vegetable that 
 
 - Highlights how its weight compares to other vegetables.  
 - Shows weights of different varieties of that vegetable.  
@@ -127,7 +131,7 @@ Let's look at the report I created for tomatoes: 01_simple_report.html
 </center>
 
 <div class="notes">
-We have all the features in the report we desired.
+PLAY VIDEO. You can see we have all the features in the report we desired.
 </div>
 
 
@@ -142,7 +146,7 @@ We have all the features in the report we desired.
 </center>
 
 <div class="notes">
-Now, let's scroll through the code that created the report. I've highlighted all the places the word "tomatoes" is used in the code. If I want to create the same report for a different vegetable, I certainly don't want to have to manually do it! 
+PLAY VIDEO. Now we'll scroll through the code that created the report. I've highlighted all the places the word "tomatoes" is used in the code. If I want to create the same report for a different vegetable, I certainly don't want to have to manually manually change all those words! 
 </div>
 
 
@@ -150,13 +154,13 @@ Now, let's scroll through the code that created the report. I've highlighted all
 
 See 02_parameterized_report.Rmd for code and the .html file for the report.
 
-![](images/yaml_params.png){width="90%"}
+![](images/yaml_params.png){width="70%"}
 
 
 <div class="notes">
-Trying to replicate this new report using find and replace would be awful. We could set up a variable at the beginning of the code, which would solve many (although not all) of our probelms, but that won't give us a good way to programatically run the file, which I'll talk about later. 
+As I just mentioned, trying to replicate this new report using find and replace would be awful. We could set up a variable at the beginning of the code, which would solve many (although not all) of our problems, but that won't give us a good way to programatically run the file, which I'll talk about later. 
 
-Instead, we add something new to the YAML header: a parameter. Our parameter is vegetable, and its initial value is "tomatoes". 
+Instead, we add something new to the YAML header: a parameter. The parameter is vegetable, and its initial value is "tomatoes". 
 </div>
 
 
@@ -171,10 +175,13 @@ Instead, we add something new to the YAML header: a parameter. Our parameter is 
 </center>
 
 <div class="notes">
+PLAY VIDEO:
+
 Once I run a section of code, the parameter is accessible via params, dollar sign, name of parameter. So, `params$vegetable`, which in this case results in "tomatoes". I can then use `params$vegetable` throughout the code. I will point out a few examples.
 
 - Here I use it to create a variable that will be used to color the tomatoes differently in a bar graph and in a table.  
 - Here I use it to add the word tomatoes to the section header.  
+- As I'm scrolling through the code, you can see more `params$vegetable`s.
 - Here I use it to put the word tomatoes in a ggplot title. 
 
 </div>
@@ -226,7 +233,7 @@ And the ggplot title containing the word tomatoes.
 ## I want the lettuce report!
 
 <center>
-<video width="800" height="600" controls>
+<video width="800" height="500" controls>
   <source src="images/param_change_rmd.mp4" type="video/mp4">
 </video>
 </center>
@@ -253,6 +260,14 @@ render(
 
 <div class="notes">
 I can use the `render()` function to change it programatically!
+
+The render function has three arguments
+
+- the first is input which gives the path and file name of the parameterized report file.  
+- output_file gives the path and name of the output file.  
+- and params gives the value for the parameter in a list, with the name of the parameter, equals sign, and new value of the parameter. 
+
+If there was more than one parameter, they would be separated by commas in the params argument list. 
 </div>
 
 ## Making a lot of reports
@@ -280,6 +295,12 @@ reports %>%
 
 <div class="notes">
 This gives me the opportunity to write some more complex code that will create all the reports I want, with very little work on my end. 
+
+The top set of code creates a vector of all vegetables with more than 2 harvests. 
+
+The next set of code creates a tibble called reports. That tibble has a variable named input of the input parameterized report, a variable with all the output files, where the report name starts with the vegetable name, and a variable of the params in the list form it requires. So, each value of that params variable is actually a list.  
+
+Lastly, the pwalk function is used to apply the `render()` function to each row of the reports tibble, which will create the report for each vegetable of interest. 
 </div>
 
 ## Other examples
@@ -292,7 +313,7 @@ This gives me the opportunity to write some more complex code that will create a
 - R for the Rest of Us's (David Keyes) Partnership for Strong Communities/Connecticut Data Collaborative [Housing Data Profiles](https://housingprofiles.pschousing.org/)
 
 <div class="notes">
-The example I gave was pretty simple, but there are many great use cases. When you have time, check out these. One of them is by David Keyes, who is speaking at this conference later today :)
+The example I gave was pretty simple, but there are many great use cases. When you have time, check these out. One of them is by David Keyes, who is speaking at this conference later today :)
 </div>
 
 ## Getting started on your own
@@ -302,8 +323,13 @@ The example I gave was pretty simple, but there are many great use cases. When y
 - Taking it a step further and [creating an API](https://www.datalorax.com/post/power-parameterized-reports-plumber/) by the datalorax (Daniel Anderson)
 - Parameterized reporting [using Quarto](https://www.mm218.dev/posts/2022-08-04-how-to-use-quarto-for-parameterized-reporting/) by Mike Mahoney. 
 
+<div class="notes">
+Since this was a really quick rundown, here are some resources you can check out to get started. Note that the last one is about using Quarto instead of RMarkdown. I haven't ventured down that path yet but hope to do it soon.
+</div>
+
+
 ## Thank you!
 
 
-All these resources are on my github page: 
+The slides and other files I referenced on the slides are on my github page: https://github.com/llendway/parameterized_reporting_canssi
 
