@@ -90,7 +90,7 @@ This is my garden. I joke that it's my 3rd child in the summers. I'm sure you're
 
 Well, not only do I harvest fruit and vegetables from it, but I collect data, too!
 
-Every time I go pick some fruit and vegetables, I bring it inside and weight it, enter it into a spreadsheet, and (eventually) update my gardenR R package. 
+Sooooo .... 
 
 </div>
 
@@ -106,7 +106,7 @@ Let's look at the report I created for tomatoes: 01_simple_report.html
 
 
 <div class="notes">
-Create a report for each vegetable that 
+Let's say I want to create a report for each vegetable that 
 
 - Highlights how its weight compares to other vegetables.  
 - Shows weights of different varieties of that vegetable.  
@@ -142,21 +142,16 @@ We have all the features in the report we desired.
 </center>
 
 <div class="notes">
-Let's scroll through the code that created the report. I've highlighted all the places the word tomatoes is used in the code. As we see at the end, there are also some places where the word tomato is used. 
+Now, let's scroll through the code that created the report. I've highlighted all the places the word "tomatoes" is used in the code. If I want to create the same report for a different vegetable, I certainly don't want to have to manually do it! 
 </div>
 
 
 ## Now what? ... `params`!
 
-<div class="columns-2">
-
-- I DO NOT want to find and replace all!  
-- There are `r length(unique(harvest_2021$vegetable))` unique vegetables. 
-- See 02_parameterized_report.Rmd
+See 02_parameterized_report.Rmd for code and the .html file for the report.
 
 ![](images/yaml_params.png){width="90%"}
 
-</div>
 
 <div class="notes">
 Trying to replicate this new report using find and replace would be awful. We could set up a variable at the beginning of the code, which would solve many (although not all) of our probelms, but that won't give us a good way to programatically run the file, which I'll talk about later. 
@@ -176,28 +171,47 @@ Instead, we add something new to the YAML header: a parameter. Our parameter is 
 </center>
 
 <div class="notes">
+Once I run a section of code, the parameter is accessible via params, dollar sign, name of parameter. So, `params$vegetable`, which in this case results in "tomatoes". I can then use `params$vegetable` throughout the code. I will point out a few examples.
+
+- Here I use it to create a variable that will be used to color the tomatoes differently in a bar graph and in a table.  
+- Here I use it to add the word tomatoes to the section header.  
+- Here I use it to put the word tomatoes in a ggplot title. 
 
 </div>
 
-## Using parameter inside of YAML
+---
 
 What you type in Rmd:
 
 ![](images/yaml_title_rmd.png){width="100%"}
 
+\
+\
+
 What it looks like in knitted file:
 ![](images/yaml_title_html.png){width="100%"}
 
-## Rmd and html
+<div class="notes">
+Here are a few examples of what those look like when the file is knitted. Here's the title in the YAML section. 
+</div>
+
+---
 
 ```{r, eval=FALSE}
-mutate(veggie_color = vegetable == params$vegetable)
+  mutate(veggie_color = vegetable == params$vegetable) %>% 
+  ggplot(
+    aes(x = total_weight_kg,
+        y = fct_reorder(vegetable, total_weight_kg),
+        fill = veggie_color)
+  )
 ```
 
 ![](images/param_highlight_veg.png){width="100%"}
 
-
-## Rmd and html
+<div class="notes">
+The tomatoes bar being highlighted in a different color in the barplot. 
+</div>
+---
 
 ```{r, eval=FALSE}
 labs(title = paste0("Total  harvest of each variety (kg), 2021: ", params$vegetable)
@@ -205,16 +219,21 @@ labs(title = paste0("Total  harvest of each variety (kg), 2021: ", params$vegeta
 
 ![](images/param_ggplot_title.png){width="100%"}
 
-## Change the parameter value - in Rmd
+<div class="notes">
+And the ggplot title containing the word tomatoes. 
+</div>
+
+## I want the lettuce report!
 
 <center>
-
 <video width="800" height="600" controls>
   <source src="images/param_change_rmd.mp4" type="video/mp4">
 </video>
-
 </center>
 
+<div class="notes">
+I can go into the rmd file and manually change the param to the value I want to create the new report. Or ....
+</div>
 
 ## Change the parameter value - programmatically
 
@@ -231,6 +250,10 @@ render(
   params = list(vegetable = "lettuce")
   )
 ```
+
+<div class="notes">
+I can use the `render()` function to change it programatically!
+</div>
 
 ## Making a lot of reports
 
@@ -255,6 +278,9 @@ reports %>%
   pwalk(render)
 ```
 
+<div class="notes">
+This gives me the opportunity to write some more complex code that will create all the reports I want, with very little work on my end. 
+</div>
 
 ## Other examples
 
@@ -265,6 +291,10 @@ reports %>%
 - [Tutorial](https://www.danieldsjoberg.com/dca-tutorial/dca-tutorial-r.html) by Daniel Sjoberg where coding language is a parameter  
 - R for the Rest of Us's (David Keyes) Partnership for Strong Communities/Connecticut Data Collaborative [Housing Data Profiles](https://housingprofiles.pschousing.org/)
 
+<div class="notes">
+The example I gave was pretty simple, but there are many great use cases. When you have time, check out these. One of them is by David Keyes, who is speaking at this conference later today :)
+</div>
+
 ## Getting started on your own
 
 - R Markdown: The Definitive Guide, [Ch. 15 Parameterized reports](https://bookdown.org/yihui/rmarkdown/parameterized-reports.html)
@@ -273,4 +303,7 @@ reports %>%
 - Parameterized reporting [using Quarto](https://www.mm218.dev/posts/2022-08-04-how-to-use-quarto-for-parameterized-reporting/) by Mike Mahoney. 
 
 ## Thank you!
+
+
+All these resources are on my github page: 
 
