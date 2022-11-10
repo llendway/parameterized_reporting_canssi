@@ -274,23 +274,20 @@ If there was more than one parameter, they would be separated by commas in the p
 
 ```{r, eval=FALSE}
 # Vector of all vegetables with more than 2 harvests
-vegetable <- harvest_2021 %>% 
+veg <- harvest_2021 %>% 
   group_by(vegetable) %>% 
   summarize(n = n()) %>% 
   filter(n > 2) %>% 
   pull(vegetable)
 
 # tibble that has the input Rmd, output file path, 
-# and params written correctly as a list. 
-reports <- tibble(
-  input = here("02_parameterized_report.Rmd"),
-  output_file = here("output", paste0(vegetable, "-report.html")),
-  params = map(vegetable, ~list(vegetable = .))
-)
+# and params written correctly as a list, eg. list(vegetable = "peppers") 
+reports <- tibble(input = here("02_parameterized_report.Rmd"),
+                  output_file = here("output", paste0(veg, "-report.html")),
+                  params = map(veg, ~list(vegetable = .)))
 
 # creates all the reports!
-reports %>% 
-  pwalk(render)
+reports %>% pwalk(render)
 ```
 
 <div class="notes">
@@ -298,10 +295,14 @@ This gives me the opportunity to write some more complex code that will create a
 
 The top set of code creates a vector of all vegetables with more than 2 harvests. 
 
-The next set of code creates a tibble called reports. That tibble has a variable named input of the input parameterized report, a variable with all the output files, where the report name starts with the vegetable name, and a variable of the params in the list form it requires. So, each value of that params variable is actually a list.  
+The next set of code creates a tibble called reports. That tibble has a variable named input of the input parameterized report, a variable with all the output files, where the report name starts with the vegetable name, and a variable of the params in the list form it requires. So, each value of that params variable is actually a list (SEE NEXT SLIDE).  
 
 Lastly, the pwalk function is used to apply the `render()` function to each row of the reports tibble, which will create the report for each vegetable of interest. 
 </div>
+
+---
+
+![](images/param_list_column.png){width="50%"}
 
 ## Other examples
 
